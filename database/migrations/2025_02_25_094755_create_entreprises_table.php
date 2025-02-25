@@ -11,17 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('entreprises', function (Blueprint $table) {
             $table->id();
             $table->string('nom');
-            $table->string('prenom');
+            $table->string('secteur');
+            $table->string('adresse');
+            $table->string('logo')->nullable();
             $table->string('email')->unique();
-            $table->string('password'); 
-            $table->string('photo')->nullable();
-            $table->string('telephone')->nullable();
-            $table->string('role')->default('employe');
-            // $table->foreignId('entreprise_id')->constrained()->onDelete('cascade');
-            $table->boolean('statut')->default(true);
+            $table->string('telephone');
+            $table->date('date_inscription');
             $table->timestamps();
         });
     }
@@ -31,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('entreprises');
     }
 };
