@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('employee_id')->constrained()->onDelete('cascade');
             $table->enum('type', ['Promotion', 'Salary Increase', 'Training', 'Position Change']);
-            $table->string('previous_value')->nullable();
-            $table->string('new_value')->nullable();
+            // $table->string('previous_value')->nullable();
+            // $table->string('new_value')->nullable();
             $table->date('date');
             $table->text('description')->nullable();
             $table->timestamps();
