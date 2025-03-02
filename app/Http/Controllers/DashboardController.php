@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
@@ -36,6 +35,13 @@ class DashboardController extends Controller
         
         // Employee dashboard
         $employee = $user->employee;
+        
+        // Add a check to handle cases where no employee exists
+        if (!$employee) {
+            // Redirect or show an error view
+            return view('dashboard.no-employee');
+        }
+        
         $stats = $this->getEmployeeStats($employee);
         return view('dashboard.employee', compact('stats'));
     }
@@ -69,6 +75,15 @@ class DashboardController extends Controller
     
     private function getManagerStats($manager)
     {
+        if (!$manager) {
+            return [
+                'team_size' => 0,
+                'department_size' => 0,
+                'active_team_contracts' => 0,
+                'team_trainings' => 0,
+            ];
+        }
+
         return [
             'team_size' => $manager->subordinates()->count(),
             'department_size' => $manager->department ? $manager->department->employees()->count() : 0,
@@ -83,6 +98,15 @@ class DashboardController extends Controller
     
     private function getEmployeeStats($employee)
     {
+        if (!$employee) {
+            return [
+                'active_contracts' => 0,
+                'career_developments' => 0,
+                'ongoing_trainings' => 0,
+                'completed_trainings' => 0,
+            ];
+        }
+
         return [
             'active_contracts' => $employee->contracts()->whereNull('end_date')->orWhere('end_date', '>=', now())->count(),
             'career_developments' => $employee->careerDevelopments()->count(),
