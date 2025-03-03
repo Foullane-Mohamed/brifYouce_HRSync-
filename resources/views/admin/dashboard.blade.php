@@ -7,16 +7,7 @@
     <div class="p-6 bg-white border-b border-gray-200">
         <h1 class="text-2xl font-semibold mb-6">Admin Dashboard</h1>
         
-        {{-- Debug info - يمكن إزالة هذا القسم بعد حل المشكلة --}}
-        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
-            <h3 class="font-bold">Debug Info:</h3>
-            <p>Current user role: {{ auth()->user()->role ? auth()->user()->role->name : 'No role assigned' }}</p>
-            <p>Is Admin? {{ auth()->user()->isAdmin() ? 'Yes' : 'No' }}</p>
-            <p>Total Users: {{ \App\Models\User::count() }}</p>
-            <p>Total Departments: {{ \App\Models\Department::count() }}</p>
-            <p>Total Leave Requests: {{ \App\Models\LeaveRequest::count() }}</p>
-        </div>
-        
+    
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <!-- Total Employees Card -->
             <div class="bg-blue-50 overflow-hidden shadow rounded-lg">

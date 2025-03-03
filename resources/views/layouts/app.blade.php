@@ -98,13 +98,7 @@
                     </div>
                 @endif
 
-                <!-- هذا هو المكان الذي سيتم عرض المحتوى فيه -->
-                <div class="debug-info bg-yellow-100 p-4 rounded mb-4">
-                    <h2 class="font-bold">Debug Info:</h2>
-                    <p>Current user: {{ auth()->user()->name }}</p>
-                    <p>User role: {{ auth()->user()->role ? auth()->user()->role->name : 'No role' }}</p>
-                    <p>Total users: {{ \App\Models\User::count() }}</p>
-                </div>
+          
 
                 @yield('content')
             </div>
