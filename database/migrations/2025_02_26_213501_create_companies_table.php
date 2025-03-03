@@ -6,20 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('companies', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('address')->nullable();
-            $table->string('phone')->nullable();
+            $table->string('industry')->nullable();
+            $table->string('address')->nullable();
             $table->string('email')->unique();
-            $table->string('logo')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('logo_path')->nullable();
             $table->timestamps();
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('companies');
     }

@@ -1,51 +1,90 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Requests\DepartmentRequest;
 
 class DepartmentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view departments')->only('index', 'show');
+        $this->middleware('permission:create departments')->only('create', 'store');
+        $this->middleware('permission:edit departments')->only('edit', 'update');
+        $this->middleware('permission:delete departments')->only('destroy');
+    }
+    
     public function index()
     {
-        $departments = Department::with('company')->get();
+        if (auth()->user()->hasRole('admin')) {
+            $departments = Department::with(['company', 'manager'])->paginate(10);
+        } else {
+            $companyId = auth()->user()->company_id;
+            $departments = Department::where('company_id', $companyId)
+                ->with(['company', 'manager'])
+                ->paginate(10);
+        }
+        
         return view('departments.index', compact('departments'));
     }
 
     public function create()
     {
         $companies = Company::all();
-        return view('departments.create', compact('companies'));
+        $managers = User::whereHas('roles', function($query) {
+            $query->whereIn('name', ['manager', 'hr', 'admin']);
+        })->get();
+        
+        return view('departments.create', compact('companies', 'managers'));
     }
 
-    public function store(DepartmentRequest $request)
+    public function store(Request $request)
     {
-        Department::create($request->validated());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'company_id' => 'required|exists:companies,id',
+            'manager_id' => 'nullable|exists:users,id',
+        ]);
+
+        $department = Department::create($validated);
         
-        return redirect()->route('departments.index')
-            ->with('success', 'Department created successfully.');
+        return redirect()->route('departments.show', $department)
+            ->with('success', 'Département créé avec succès.');
     }
 
     public function show(Department $department)
     {
-        $department->load('employees', 'company');
+        $department->load(['company', 'manager', 'employees.user']);
         return view('departments.show', compact('department'));
     }
 
     public function edit(Department $department)
     {
         $companies = Company::all();
-        return view('departments.edit', compact('department', 'companies'));
+        $managers = User::whereHas('roles', function($query) {
+            $query->whereIn('name', ['manager', 'hr', 'admin']);
+        })->get();
+        
+        return view('departments.edit', compact('department', 'companies', 'managers'));
     }
 
-    public function update(DepartmentRequest $request, Department $department)
+    public function update(Request $request, Department $department)
     {
-        $department->update($request->validated());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'company_id' => 'required|exists:companies,id',
+            'manager_id' => 'nullable|exists:users,id',
+        ]);
+
+        $department->update($validated);
         
-        return redirect()->route('departments.index')
-            ->with('success', 'Department updated successfully.');
+        return redirect()->route('departments.show', $department)
+            ->with('success', 'Département mis à jour avec succès.');
     }
 
     public function destroy(Department $department)
@@ -53,6 +92,6 @@ class DepartmentController extends Controller
         $department->delete();
         
         return redirect()->route('departments.index')
-            ->with('success', 'Department deleted successfully.');
+            ->with('success', 'Département supprimé avec succès.');
     }
 }

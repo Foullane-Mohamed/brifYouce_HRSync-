@@ -1,27 +1,24 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Employee extends Model
+class Employee extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
-        'user_id',
-        'department_id',
-        'manager_id',
-        'position',
-        'hire_date',
-        'birth_date',
-        'address',
-        'salary',
+        'user_id', 'department_id', 'company_id', 'birth_date', 'hire_date',
+        'position', 'contract_type', 'salary', 'status', 'manager_id', 'address'
     ];
 
     protected $casts = [
-        'hire_date' => 'date',
         'birth_date' => 'date',
+        'hire_date' => 'date',
     ];
 
     public function user()
@@ -34,6 +31,11 @@ class Employee extends Model
         return $this->belongsTo(Department::class);
     }
 
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
     public function manager()
     {
         return $this->belongsTo(Employee::class, 'manager_id');
@@ -44,20 +46,15 @@ class Employee extends Model
         return $this->hasMany(Employee::class, 'manager_id');
     }
 
-    public function contracts()
+    public function careerEvents()
     {
-        return $this->hasMany(Contract::class);
+        return $this->hasMany(CareerEvent::class);
     }
-
-    public function careerDevelopments()
+    
+    public function registerMediaCollections(): void
     {
-        return $this->hasMany(CareerDevelopment::class);
-    }
-
-    public function trainings()
-    {
-        return $this->belongsToMany(Training::class, 'employee_training')
-            ->withPivot('status')
-            ->withTimestamps();
+        $this->addMediaCollection('contracts');
+        $this->addMediaCollection('payslips');
+        $this->addMediaCollection('documents');
     }
 }

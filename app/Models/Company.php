@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,11 +12,7 @@ class Company extends Model implements HasMedia
     use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
-        'name',
-        'address',
-        'phone',
-        'email',
-        'logo',
+        'name', 'industry', 'address', 'email', 'phone', 'logo_path'
     ];
 
     public function users()
@@ -23,13 +20,21 @@ class Company extends Model implements HasMedia
         return $this->hasMany(User::class);
     }
 
+    public function employees()
+    {
+        return $this->hasMany(Employee::class);
+    }
+
     public function departments()
     {
         return $this->hasMany(Department::class);
     }
-
-    public function employees()
+    
+    public function registerMediaCollections(): void
     {
-        return $this->hasManyThrough(Employee::class, User::class);
+        $this->addMediaCollection('logo')
+            ->singleFile();
+        
+        $this->addMediaCollection('documents');
     }
 }

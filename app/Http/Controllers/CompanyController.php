@@ -1,16 +1,25 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Company;
 use Illuminate\Http\Request;
-use App\Http\Requests\CompanyRequest;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class CompanyController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view companies')->only('index', 'show');
+        $this->middleware('permission:create companies')->only('create', 'store');
+        $this->middleware('permission:edit companies')->only('edit', 'update');
+        $this->middleware('permission:delete companies')->only('destroy');
+    }
+    
     public function index()
     {
-        $companies = Company::all();
+        $companies = Company::paginate(10);
         return view('companies.index', compact('companies'));
     }
 
@@ -19,22 +28,29 @@ class CompanyController extends Controller
         return view('companies.create');
     }
 
-    public function store(CompanyRequest $request)
+    public function store(Request $request)
     {
-        $company = Company::create($request->validated());
-        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:companies',
+            'industry' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'phone' => 'nullable|string|max:20',
+            'logo' => 'nullable|image|max:2048', // 2MB max
+        ]);
+
+        $company = Company::create($validated);
+
         if ($request->hasFile('logo')) {
-            $company->addMediaFromRequest('logo')
-                ->toMediaCollection('logos');
+            $company->addMediaFromRequest('logo')->toMediaCollection('logo');
         }
-        
-        return redirect()->route('companies.index')
-            ->with('success', 'Company created successfully.');
+
+        return redirect()->route('companies.show', $company)
+            ->with('success', 'Entreprise créée avec succès.');
     }
 
     public function show(Company $company)
     {
-        $company->load('departments', 'employees.user');
         return view('companies.show', compact('company'));
     }
 
@@ -43,25 +59,32 @@ class CompanyController extends Controller
         return view('companies.edit', compact('company'));
     }
 
-    public function update(CompanyRequest $request, Company $company)
+    public function update(Request $request, Company $company)
     {
-        $company->update($request->validated());
-        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('companies')->ignore($company->id)],
+            'industry' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'phone' => 'nullable|string|max:20',
+            'logo' => 'nullable|image|max:2048', // 2MB max
+        ]);
+
+        $company->update($validated);
+
         if ($request->hasFile('logo')) {
-            $company->clearMediaCollection('logos');
-            $company->addMediaFromRequest('logo')
-                ->toMediaCollection('logos');
+            $company->clearMediaCollection('logo');
+            $company->addMediaFromRequest('logo')->toMediaCollection('logo');
         }
-        
-        return redirect()->route('companies.index')
-            ->with('success', 'Company updated successfully.');
+
+        return redirect()->route('companies.show', $company)
+            ->with('success', 'Entreprise mise à jour avec succès.');
     }
 
     public function destroy(Company $company)
     {
         $company->delete();
-        
         return redirect()->route('companies.index')
-            ->with('success', 'Company deleted successfully.');
+            ->with('success', 'Entreprise supprimée avec succès.');
     }
 }
