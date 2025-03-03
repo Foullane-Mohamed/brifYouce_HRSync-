@@ -1,58 +1,68 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-  <!-- Primary Navigation Menu -->
+
+<nav class="bg-white border-b border-gray-200">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
           <div class="flex">
               <!-- Logo -->
               <div class="shrink-0 flex items-center">
-                  <a href="{{ route('dashboard') }}">
-                      <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                  <a href="{{ route('dashboard') }}" class="font-bold text-xl text-blue-600">
+                      EMS
                   </a>
               </div>
 
               <!-- Navigation Links -->
               <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                  <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                      {{ __('Dashboard') }}
-                  </x-nav-link>
-
-                  @can('view companies')
-                  <x-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*')">
-                      {{ __('Entreprises') }}
-                  </x-nav-link>
-                  @endcan
-
-                  @can('view departments')
-                  <x-nav-link :href="route('departments.index')" :active="request()->routeIs('departments.*')">
-                      {{ __('Départements') }}
-                  </x-nav-link>
-                  @endcan
-
-                  @can('view employees')
-                  <x-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.*')">
-                      {{ __('Employés') }}
-                  </x-nav-link>
-                  @endcan
-
-                  @can('view employees')
-                  <x-nav-link :href="route('employees.org-chart')" :active="request()->routeIs('employees.org-chart')">
-                      {{ __('Organigramme') }}
-                  </x-nav-link>
-                  @endcan
-
-                  @can('view career events')
-                  <x-nav-link :href="route('career-events.index')" :active="request()->routeIs('career-events.*')">
-                      {{ __('Événements de carrière') }}
-                  </x-nav-link>
-                  @endcan
+                  @if(auth()->user()->isAdmin())
+                      <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Dashboard
+                      </a>
+                      <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Users
+                      </a>
+                      <a href="{{ route('admin.departments.index') }}" class="{{ request()->routeIs('admin.departments.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Departments
+                      </a>
+                      <a href="{{ route('admin.leave-requests.index') }}" class="{{ request()->routeIs('admin.leave-requests.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Leave Requests
+                      </a>
+                  @elseif(auth()->user()->isHR())
+                      <a href="{{ route('hr.dashboard') }}" class="{{ request()->routeIs('hr.dashboard') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Dashboard
+                      </a>
+                      <a href="{{ route('hr.employees.index') }}" class="{{ request()->routeIs('hr.employees.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Employees
+                      </a>
+                      <a href="{{ route('hr.leave-requests.index') }}" class="{{ request()->routeIs('hr.leave-requests.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Leave Requests
+                      </a>
+                      <a href="{{ route('hr.attendance.index') }}" class="{{ request()->routeIs('hr.attendance.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Attendance
+                      </a>
+                      <a href="{{ route('hr.performance-reviews.index') }}" class="{{ request()->routeIs('hr.performance-reviews.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Performance
+                      </a>
+                  @else
+                      <a href="{{ route('employee.dashboard') }}" class="{{ request()->routeIs('employee.dashboard') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Dashboard
+                      </a>
+                      <a href="{{ route('employee.leave-requests.index') }}" class="{{ request()->routeIs('employee.leave-requests.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Leave Requests
+                      </a>
+                      <a href="{{ route('employee.attendance.index') }}" class="{{ request()->routeIs('employee.attendance.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Attendance
+                      </a>
+                      <a href="{{ route('employee.performance-reviews.index') }}" class="{{ request()->routeIs('employee.performance-reviews.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
+                          Performance
+                      </a>
+                  @endif
               </div>
           </div>
 
           <!-- Settings Dropdown -->
           <div class="hidden sm:flex sm:items-center sm:ml-6">
-              <x-dropdown align="right" width="48">
-                  <x-slot name="trigger">
-                      <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+              <div class="relative" x-data="{ open: false }" @click.away="open = false" @close.stop="open = false">
+                  <div @click="open = ! open">
+                      <button class="flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
                           <div>{{ Auth::user()->name }}</div>
 
                           <div class="ml-1">
@@ -61,25 +71,34 @@
                               </svg>
                           </div>
                       </button>
-                  </x-slot>
+                  </div>
 
-                  <x-slot name="content">
-                      <x-dropdown-link :href="route('profile.edit')">
-                          {{ __('Profile') }}
-                      </x-dropdown-link>
+                  <div x-show="open"
+                          x-transition:enter="transition ease-out duration-200"
+                          x-transition:enter-start="transform opacity-0 scale-95"
+                          x-transition:enter-end="transform opacity-100 scale-100"
+                          x-transition:leave="transition ease-in duration-75"
+                          x-transition:leave-start="transform opacity-100 scale-100"
+                          x-transition:leave-end="transform opacity-0 scale-95"
+                          class="absolute right-0 z-50 mt-2 w-48 rounded-md shadow-lg origin-top-right"
+                          style="display: none;">
+                      <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white">
+                          <!-- Profile -->
+                          <a href="{{ route('employee.profile') }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
+                              Profile
+                          </a>
 
-                      <!-- Authentication -->
-                      <form method="POST" action="{{ route('logout') }}">
-                          @csrf
-
-                          <x-dropdown-link :href="route('logout')"
-                                  onclick="event.preventDefault();
-                                              this.closest('form').submit();">
-                              {{ __('Se déconnecter') }}
-                          </x-dropdown-link>
-                      </form>
-                  </x-slot>
-              </x-dropdown>
+                          <!-- Authentication -->
+                          <form method="POST" action="{{ route('logout') }}">
+                              @csrf
+                              <a href="{{ route('logout') }}" class="block px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
+                                      onclick="event.preventDefault(); this.closest('form').submit();">
+                                  Log Out
+                              </a>
+                          </form>
+                      </div>
+                  </div>
+              </div>
           </div>
 
           <!-- Hamburger -->
@@ -97,39 +116,51 @@
   <!-- Responsive Navigation Menu -->
   <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
       <div class="pt-2 pb-3 space-y-1">
-          <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-              {{ __('Dashboard') }}
-          </x-responsive-nav-link>
-          
-          @can('view companies')
-          <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.*')">
-              {{ __('Entreprises') }}
-          </x-responsive-nav-link>
-          @endcan
-          
-          @can('view departments')
-          <x-responsive-nav-link :href="route('departments.index')" :active="request()->routeIs('departments.*')">
-              {{ __('Départements') }}
-          </x-responsive-nav-link>
-          @endcan
-          
-          @can('view employees')
-          <x-responsive-nav-link :href="route('employees.index')" :active="request()->routeIs('employees.*')">
-              {{ __('Employés') }}
-          </x-responsive-nav-link>
-          @endcan
-          
-          @can('view employees')
-          <x-responsive-nav-link :href="route('employees.org-chart')" :active="request()->routeIs('employees.org-chart')">
-              {{ __('Organigramme') }}
-          </x-responsive-nav-link>
-          @endcan
-          
-          @can('view career events')
-          <x-responsive-nav-link :href="route('career-events.index')" :active="request()->routeIs('career-events.*')">
-              {{ __('Événements de carrière') }}
-          </x-responsive-nav-link>
-          @endcan
+          @if(auth()->user()->isAdmin())
+              <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Dashboard
+              </a>
+              <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Users
+              </a>
+              <a href="{{ route('admin.departments.index') }}" class="{{ request()->routeIs('admin.departments.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Departments
+              </a>
+              <a href="{{ route('admin.leave-requests.index') }}" class="{{ request()->routeIs('admin.leave-requests.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Leave Requests
+              </a>
+          @elseif(auth()->user()->isHR())
+              <!-- HR Responsive Menu -->
+              <a href="{{ route('hr.dashboard') }}" class="{{ request()->routeIs('hr.dashboard') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Dashboard
+              </a>
+              <a href="{{ route('hr.employees.index') }}" class="{{ request()->routeIs('hr.employees.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Employees
+              </a>
+              <a href="{{ route('hr.leave-requests.index') }}" class="{{ request()->routeIs('hr.leave-requests.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Leave Requests
+              </a>
+              <a href="{{ route('hr.attendance.index') }}" class="{{ request()->routeIs('hr.attendance.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Attendance
+              </a>
+              <a href="{{ route('hr.performance-reviews.index') }}" class="{{ request()->routeIs('hr.performance-reviews.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Performance
+              </a>
+          @else
+              <!-- Employee Responsive Menu -->
+              <a href="{{ route('employee.dashboard') }}" class="{{ request()->routeIs('employee.dashboard') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Dashboard
+              </a>
+              <a href="{{ route('employee.leave-requests.index') }}" class="{{ request()->routeIs('employee.leave-requests.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Leave Requests
+              </a>
+              <a href="{{ route('employee.attendance.index') }}" class="{{ request()->routeIs('employee.attendance.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Attendance
+              </a>
+              <a href="{{ route('employee.performance-reviews.index') }}" class="{{ request()->routeIs('employee.performance-reviews.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                  Performance
+              </a>
+          @endif
       </div>
 
       <!-- Responsive Settings Options -->
@@ -140,19 +171,18 @@
           </div>
 
           <div class="mt-3 space-y-1">
-              <x-responsive-nav-link :href="route('profile.edit')">
-                  {{ __('Profil') }}
-              </x-responsive-nav-link>
+              <!-- Profile -->
+              <a href="{{ route('employee.profile') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300">
+                  Profile
+              </a>
 
               <!-- Authentication -->
               <form method="POST" action="{{ route('logout') }}">
                   @csrf
-
-                  <x-responsive-nav-link :href="route('logout')"
-                          onclick="event.preventDefault();
-                                      this.closest('form').submit();">
-                      {{ __('Se déconnecter') }}
-                  </x-responsive-nav-link>
+                  <a href="{{ route('logout') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300"
+                          onclick="event.preventDefault(); this.closest('form').submit();">
+                      Log Out
+                  </a>
               </form>
           </div>
       </div>

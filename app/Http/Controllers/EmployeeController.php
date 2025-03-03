@@ -1,232 +1,176 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Models\Employee;
+use App\Models\AttendanceRecord;
+use App\Models\LeaveRequest;
+use App\Models\PerformanceReview;
 use App\Models\User;
-use App\Models\Department;
-use App\Models\Company;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class EmployeeController extends Controller
 {
-    public function __construct()
+    public function dashboard()
     {
-        $this->middleware('permission:view employees')->only('index', 'show');
-        $this->middleware('permission:create employees')->only('create', 'store');
-        $this->middleware('permission:edit employees')->only('edit', 'update');
-        $this->middleware('permission:delete employees')->only('destroy');
+        $user = Auth::user();
+        $pendingLeaveRequests = LeaveRequest::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->count();
+        $approvedLeaveRequests = LeaveRequest::where('user_id', $user->id)
+            ->where('status', 'approved')
+            ->count();
+        $latestPerformanceReview = PerformanceReview::where('user_id', $user->id)
+            ->latest()
+            ->first();
+        
+        return view('employee.dashboard', compact('pendingLeaveRequests', 'approvedLeaveRequests', 'latestPerformanceReview'));
     }
     
-    public function index()
+    // Profile Management
+    public function profile()
     {
-        if (auth()->user()->hasRole('admin')) {
-            $employees = Employee::with(['user', 'department', 'company'])->paginate(10);
+        $user = Auth::user();
+        return view('employee.profile', compact('user'));
+    }
+    
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone_number' => 'nullable|string',
+            'address' => 'nullable|string',
+        ]);
+        
+        $user->name = $request->name;
+        $user->phone_number = $request->phone_number;
+        $user->address = $request->address;
+        $user->save();
+        
+        return redirect()->route('employee.profile')->with('success', 'Profile updated successfully.');
+    }
+    
+    // Leave Request Management
+    public function leaveRequestIndex()
+    {
+        $leaveRequests = LeaveRequest::where('user_id', Auth::id())->paginate(10);
+        return view('employee.leave-requests.index', compact('leaveRequests'));
+    }
+    
+    public function leaveRequestCreate()
+    {
+        return view('employee.leave-requests.create');
+    }
+    
+    public function leaveRequestStore(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'type' => 'required|string',
+            'reason' => 'nullable|string',
+        ]);
+        
+        LeaveRequest::create([
+            'user_id' => Auth::id(),
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'type' => $request->type,
+            'reason' => $request->reason,
+            'status' => 'pending',
+        ]);
+        
+        return redirect()->route('employee.leave-requests.index')->with('success', 'Leave request submitted successfully.');
+    }
+    
+    public function leaveRequestShow(LeaveRequest $leaveRequest)
+    {
+        // Ensure the leave request belongs to the authenticated user
+        if ($leaveRequest->user_id !== Auth::id()) {
+            abort(403);
+        }
+        
+        return view('employee.leave-requests.show', compact('leaveRequest'));
+    }
+    
+    // Attendance Management
+    public function attendanceIndex()
+    {
+        $attendanceRecords = AttendanceRecord::where('user_id', Auth::id())->paginate(10);
+        return view('employee.attendance.index', compact('attendanceRecords'));
+    }
+    
+    public function clockIn()
+    {
+        $today = now()->toDateString();
+        $user = Auth::user();
+        
+        // Check if already clocked in today
+        $existingRecord = AttendanceRecord::where('user_id', $user->id)
+            ->where('date', $today)
+            ->first();
+        
+        if ($existingRecord) {
+            if ($existingRecord->clock_in) {
+                return redirect()->route('employee.dashboard')->with('error', 'You have already clocked in today.');
+            }
+            
+            $existingRecord->clock_in = now()->toTimeString();
+            $existingRecord->save();
         } else {
-            $companyId = auth()->user()->company_id;
-            $employees = Employee::where('company_id', $companyId)
-                ->with(['user', 'department'])
-                ->paginate(10);
-        }
-        
-        return view('employees.index', compact('employees'));
-    }
-
-    public function create()
-    {
-        $departments = Department::all();
-        $managers = Employee::all();
-        $companies = Company::all();
-        
-        return view('employees.create', compact('departments', 'managers', 'companies'));
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8',
-            'phone' => 'nullable|string|max:20',
-            'company_id' => 'required|exists:companies,id',
-            'department_id' => 'nullable|exists:departments,id',
-            'birth_date' => 'nullable|date',
-            'hire_date' => 'required|date',
-            'position' => 'required|string|max:255',
-            'contract_type' => 'required|string|in:CDI,CDD,Freelance,Stage',
-            'salary' => 'nullable|numeric',
-            'status' => 'required|string|in:active,inactive,on_leave',
-            'manager_id' => 'nullable|exists:employees,id',
-            'address' => 'nullable|string',
-            'avatar' => 'nullable|image|max:2048',
-            'contract_document' => 'nullable|file|max:10240',
-        ]);
-
-        DB::beginTransaction();
-        
-        try {
-            // Create user
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
-                'phone' => $validated['phone'] ?? null,
-                'company_id' => $validated['company_id'],
-                'status' => $validated['status'] === 'active',
-            ]);
-            
-            // Assign default role
-            $user->assignRole('employee');
-            
-            // Create employee
-            $employee = Employee::create([
+            AttendanceRecord::create([
                 'user_id' => $user->id,
-                'department_id' => $validated['department_id'] ?? null,
-                'company_id' => $validated['company_id'],
-                'birth_date' => $validated['birth_date'] ?? null,
-                'hire_date' => $validated['hire_date'],
-                'position' => $validated['position'],
-                'contract_type' => $validated['contract_type'],
-                'salary' => $validated['salary'] ?? null,
-                'status' => $validated['status'],
-                'manager_id' => $validated['manager_id'] ?? null,
-                'address' => $validated['address'] ?? null,
+                'date' => $today,
+                'clock_in' => now()->toTimeString(),
+                'status' => 'present',
             ]);
-            
-            // Add media if provided
-            if ($request->hasFile('avatar')) {
-                $user->addMediaFromRequest('avatar')->toMediaCollection('avatar');
-            }
-            
-            if ($request->hasFile('contract_document')) {
-                $employee->addMediaFromRequest('contract_document')
-                    ->toMediaCollection('contracts');
-            }
-            
-            DB::commit();
-            
-            return redirect()->route('employees.show', $employee)
-                ->with('success', 'Employé créé avec succès.');
-                
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Une erreur est survenue: ' . $e->getMessage())->withInput();
         }
-    }
-
-    public function show(Employee $employee)
-    {
-        $employee->load(['user', 'department', 'company', 'manager', 'careerEvents']);
-        return view('employees.show', compact('employee'));
-    }
-
-    public function edit(Employee $employee)
-    {
-        $departments = Department::all();
-        $managers = Employee::where('id', '!=', $employee->id)->get();
-        $companies = Company::all();
         
-        return view('employees.edit', compact('employee', 'departments', 'managers', 'companies'));
+        return redirect()->route('employee.dashboard')->with('success', 'Clocked in successfully.');
     }
-
-    public function update(Request $request, Employee $employee)
+    
+    public function clockOut()
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $employee->user_id,
-            'phone' => 'nullable|string|max:20',
-            'company_id' => 'required|exists:companies,id',
-            'department_id' => 'nullable|exists:departments,id',
-            'birth_date' => 'nullable|date',
-            'hire_date' => 'required|date',
-            'position' => 'required|string|max:255',
-            'contract_type' => 'required|string|in:CDI,CDD,Freelance,Stage',
-            'salary' => 'nullable|numeric',
-            'status' => 'required|string|in:active,inactive,on_leave',
-            'manager_id' => 'nullable|exists:employees,id',
-            'address' => 'nullable|string',
-            'avatar' => 'nullable|image|max:2048',
-            'contract_document' => 'nullable|file|max:10240',
-        ]);
-
-        DB::beginTransaction();
+        $today = now()->toDateString();
+        $user = Auth::user();
         
-        try {
-            // Update user
-            $employee->user->update([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone'] ?? null,
-                'company_id' => $validated['company_id'],
-                'status' => $validated['status'] === 'active',
-            ]);
-            
-            // Update employee
-            $employee->update([
-                'department_id' => $validated['department_id'] ?? null,
-                'company_id' => $validated['company_id'],
-                'birth_date' => $validated['birth_date'] ?? null,
-                'hire_date' => $validated['hire_date'],
-                'position' => $validated['position'],
-                'contract_type' => $validated['contract_type'],
-                'salary' => $validated['salary'] ?? null,
-                'status' => $validated['status'],
-                'manager_id' => $validated['manager_id'] ?? null,
-                'address' => $validated['address'] ?? null,
-            ]);
-            
-            // Update media if provided
-            if ($request->hasFile('avatar')) {
-                $employee->user->clearMediaCollection('avatar');
-                $employee->user->addMediaFromRequest('avatar')->toMediaCollection('avatar');
-            }
-            
-            if ($request->hasFile('contract_document')) {
-                $employee->addMediaFromRequest('contract_document')
-                    ->toMediaCollection('contracts');
-            }
-            
-            DB::commit();
-            
-            return redirect()->route('employees.show', $employee)
-                ->with('success', 'Employé mis à jour avec succès.');
-                
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Une erreur est survenue: ' . $e->getMessage())->withInput();
+        $record = AttendanceRecord::where('user_id', $user->id)
+            ->where('date', $today)
+            ->first();
+        
+        if (!$record) {
+            return redirect()->route('employee.dashboard')->with('error', 'No clock-in record found for today.');
         }
-    }
-
-    public function destroy(Employee $employee)
-    {
-        DB::beginTransaction();
         
-        try {
-            $user = $employee->user;
-            $employee->delete();
-            $user->delete();
-            
-            DB::commit();
-            
-            return redirect()->route('employees.index')
-                ->with('success', 'Employé supprimé avec succès.');
-                
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());
+        if (!$record->clock_in) {
+            return redirect()->route('employee.dashboard')->with('error', 'You need to clock in first.');
         }
+        
+        if ($record->clock_out) {
+            return redirect()->route('employee.dashboard')->with('error', 'You have already clocked out today.');
+        }
+        
+        $record->clock_out = now()->toTimeString();
+        $record->save();
+        
+        return redirect()->route('employee.dashboard')->with('success', 'Clocked out successfully.');
     }
-
-    public function orgChart()
+    
+    // Performance Review
+    public function performanceReviewIndex()
     {
-        $companyId = auth()->user()->company_id;
-        $rootEmployees = Employee::where('company_id', $companyId)
-            ->whereNull('manager_id')
-            ->with('user')
-            ->get();
-            
-        return view('employees.org-chart', compact('rootEmployees'));
+        $performanceReviews = PerformanceReview::where('user_id', Auth::id())->paginate(10);
+        return view('employee.performance-reviews.index', compact('performanceReviews'));
+    }
+    
+    public function performanceReviewShow(PerformanceReview $performanceReview)
+    {
+        // Ensure the performance review belongs to the authenticated user
+        if ($performanceReview->user_id !== Auth::id()) {
+            abort(403);
+        }
+        
+        return view('employee.performance-reviews.show', compact('performanceReview'));
     }
 }

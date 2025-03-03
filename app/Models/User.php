@@ -1,26 +1,30 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class User extends Authenticatable implements HasMedia
+class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, InteractsWithMedia;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
         'email',
         'password',
-        'phone',
-        'company_id',
-        'status',
+        'role_id',
+        'employee_id',
+        'phone_number',
+        'address',
+        'position',
+        'department',
+        'hire_date',
+        'salary',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -31,29 +35,42 @@ class User extends Authenticatable implements HasMedia
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'status' => 'boolean',
+        'hire_date' => 'date',
+        'is_active' => 'boolean',
     ];
 
-    public function company()
+    public function role(): BelongsTo
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(Role::class);
     }
 
-    public function employee()
+    public function leaveRequests(): HasMany
     {
-        return $this->hasOne(Employee::class);
+        return $this->hasMany(LeaveRequest::class);
     }
 
-    public function isActive()
+    public function attendanceRecords(): HasMany
     {
-        return $this->status;
+        return $this->hasMany(AttendanceRecord::class);
     }
-    
-    public function registerMediaCollections(): void
+
+    public function performanceReviews(): HasMany
     {
-        $this->addMediaCollection('avatar')
-            ->singleFile();
-            
-        $this->addMediaCollection('documents');
+        return $this->hasMany(PerformanceReview::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role && $this->role->slug === 'admin';
+    }
+
+    public function isHR(): bool
+    {
+        return $this->role && $this->role->slug === 'hr';
+    }
+
+    public function isEmployee(): bool
+    {
+        return $this->role && $this->role->slug === 'employee';
     }
 }
