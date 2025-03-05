@@ -16,7 +16,7 @@
     <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    <!-- Font Awesome (يمكنك استخدام CDN) -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     
     <!-- Tailwind CSS -->
@@ -49,7 +49,7 @@
                                 Departments
                             </a>
                             <a href="{{ route('admin.leave-requests.index') }}" class="text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 text-sm font-medium">
-                                Leave Requests
+                               Requests
                             </a>
                         </div>
                     </div>
@@ -115,12 +115,10 @@
     </div>
 
     <script>
-        // تفعيل القائمة المنسدلة للمستخدم
         document.getElementById('userDropdown').addEventListener('click', function() {
             document.getElementById('dropdownMenu').classList.toggle('hidden');
         });
 
-        // إخفاء القائمة عند النقر في أي مكان آخر
         document.addEventListener('click', function(event) {
             if (!event.target.closest('#userDropdown')) {
                 document.getElementById('dropdownMenu').classList.add('hidden');

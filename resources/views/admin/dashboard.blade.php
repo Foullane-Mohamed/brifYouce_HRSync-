@@ -1,3 +1,4 @@
+{{-- resources/views/admin/dashboard.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Admin Dashboard')
@@ -7,7 +8,6 @@
     <div class="p-6 bg-white border-b border-gray-200">
         <h1 class="text-2xl font-semibold mb-6">Admin Dashboard</h1>
         
-    
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <!-- Total Employees Card -->
             <div class="bg-blue-50 overflow-hidden shadow rounded-lg">
@@ -160,9 +160,9 @@
             </div>
         </div>
         
-        {{-- Most Recent Users Section --}}
+        <!-- Recently Added Users -->
         <div class="mt-10">
-            <h2 class="text-xl font-semibold mb-4">Most Recent Users</h2>
+            <h2 class="text-xl font-semibold mb-4">Recently Added Users</h2>
             
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -180,9 +180,7 @@
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                        </div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

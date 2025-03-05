@@ -1,4 +1,4 @@
-
+{{-- resources/views/admin/users/show.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'User Details')
@@ -24,7 +24,7 @@
                     {{ $user->name }}
                 </h3>
                 <p class="mt-1 max-w-2xl text-sm text-gray-500">
-                    {{ $user->role->name }} - {{ $user->employee_id ?: 'No ID' }}
+                    {{ $user->role->name ?? 'No Role' }} - {{ $user->employee_id ?: 'No ID' }}
                 </p>
                 <p class="mt-1 max-w-2xl text-sm text-gray-700">
                     @if($user->is_active)
@@ -93,7 +93,7 @@
                             Salary
                         </dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            ${{ number_format($user->salary, 2) ?: 'Not Assigned' }}
+                            {{ $user->salary ? '.number_format($user->salary, 2) : 'Not Assigned' }}
                         </dd>
                     </div>
                     <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

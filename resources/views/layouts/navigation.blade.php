@@ -23,7 +23,7 @@
                           Departments
                       </a>
                       <a href="{{ route('admin.leave-requests.index') }}" class="{{ request()->routeIs('admin.leave-requests.*') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">
-                          Leave Requests
+                          Leave hr and employee
                       </a>
                   @elseif(auth()->user()->isHR())
                       <a href="{{ route('hr.dashboard') }}" class="{{ request()->routeIs('hr.dashboard') ? 'border-b-2 border-indigo-500 text-gray-900' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300' }} inline-flex items-center px-1 pt-1 text-sm font-medium">

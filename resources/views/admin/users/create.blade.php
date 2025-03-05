@@ -1,7 +1,7 @@
-
+{{-- resources/views/admin/users/create.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Create User')
+@section('title', 'Create New User')
 
 @section('content')
 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
