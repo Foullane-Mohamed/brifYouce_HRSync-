@@ -79,14 +79,14 @@
     document.addEventListener('DOMContentLoaded', function() {
         const startDateInput = document.getElementById('start_date');
         const endDateInput = document.getElementById('end_date');
-        
+
         // Set min value for start date to today
         startDateInput.min = new Date().toISOString().split('T')[0];
-        
+
         startDateInput.addEventListener('change', function() {
             // Set min value for end date to start date
             endDateInput.min = startDateInput.value;
-            
+
             // If end date is before start date, update end date
             if (endDateInput.value && new Date(endDateInput.value) < new Date(startDateInput.value)) {
                 endDateInput.value = startDateInput.value;
